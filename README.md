@@ -1,6 +1,7 @@
 # Nejlepší Učitel CZ
 
-Zdravím, rozhodl jsem se napodobit https://nejhorsipremier.cz/, ale udělat to v poněkud pozitivnějším světle. Udělaný meme můžeš poslad kamarádovi, mamince či si vytisknout.
+Zdravím, rozhodl jsem se napodobit https://nejhorsipremier.cz/, ale udělat to v poněkud pozitivnějším světle. Pokud ti chybí tvůj oblíbený pedagog, tak mi prosím pošli jméno a ještě lépe fotku.
+Jednoduchý způsob jak udělat meme na tvého oblíbeného pedagoga, který můžeš poslad kamarádovi, mamince či si vytisknout.
 
 ## Jak spustit
 
