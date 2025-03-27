@@ -44,7 +44,6 @@
   <canvas id="canvas"></canvas>
   <br>
   <button class="button" onclick="downloadImage()">Stahuj</button>
-  <p><small>(Pokud nefunguje, tak klikni pravým na obrázek)</small></p>
   <br>
   <p>Uděláno Markem ze zpráv. Kód k nalezení na <a href="https://github.com/klimarvscht/NejlepsiUcitelCZ" target="_blank">github</a></p>
 
@@ -183,8 +182,8 @@
       }
     }, "image/png");
   } catch (e) {
-    console.error("Download failed:", e);
-    alert("Download failed: The canvas is tainted (likely due to cross-origin images). Running this on a web server may resolve this issue.");
+    console.error("Stahování sa dojebalo:", e);
+    alert("Stahování nefunguje. Fňuk. Zkus kliknou pravým myšítkem na obrázek a dát stáhnout.");
   }
     }
 
