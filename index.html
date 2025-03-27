@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Nejlepší učitel cz</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Roboto+Condensed&display=swap');
+    body { font-family: 'Roboto Condensed', sans-serif; text-align: center; background-color: #bfbfbf; }
+    canvas { border: 1px solid black; margin-top: 10px; }
+    .button { 
+      background-color: red; 
+      color: white; 
+      border: none; 
+      padding: 10px 20px; 
+      margin: 10px;
+      font-size: 16px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+    .button:hover { background-color: darkred; }
+    input[type="text"], input[type="file"], select {
+      padding: 10px;
+      font-size: 16px;
+      width: 300px;
+      margin: 10px;
+    }
+    h1 { font-size: 60px; }
+  </style>
+</head>
+<body>
+  <h1>NEJLEPŠÍ UČITEL CZ</h1>
+  
+  <!-- Teacher dropdown: load image from folder "ucitele" or choose to upload -->
+  <select id="teacherSelect" onchange="updateTeacher()"></select>
+  
+  <!-- File input for teacher upload; hidden by default -->
+  <input type="file" id="imageUpload" accept="image/*" style="display: none;">
+  <br>
+  <select id="foregroundSelect" onchange="updateForeground()"></select>
+  <br>
+  <input type="text" id="textInput" placeholder="Naučil mě jak vařit dobroty">
+  <br>
+  <canvas id="canvas"></canvas>
+  <br>
+  <button class="button" onclick="downloadImage()">Stahuj</button>
+  <p><small>(Pokud nefunguje, tak klikni pravým na obrázek)</small></p>
+  <br>
+  <p>Uděláno Markem ze zpráv. Kód k nalezení na <a href="https://github.com/klimarvscht/NejlepsiUcitelCZ" target="_blank">github</a></p>
+
+  <script>
+    let canvas = document.getElementById('canvas');
+    let ctx = canvas.getContext('2d');
+    // This image holds the teacher image (either loaded from "ucitele" or uploaded)
+    let image = new Image(); 
+    let fgImage = new Image();
+    let bgImage = new Image();
+    let uploaded = false;
+    
+    // Load the background image from a local file
+    bgImage.src = "background.png";
+    bgImage.onload = function() { updateCanvas(); };
+
+    // File input event for teacher image upload (only used if "Upload Image" is selected)
+    document.getElementById('imageUpload').addEventListener('change', function(event) {
+      let file = event.target.files[0];
+      let reader = new FileReader();
+      reader.onload = function(e) { 
+        image.src = e.target.result; 
+      };
+      reader.readAsDataURL(file);
+    });
+
+    image.onload = function() { 
+      uploaded = true; 
+      updateCanvas(); 
+    };
+
+    document.getElementById('textInput').addEventListener('input', updateCanvas);
+
+    function updateCanvas() {
+      // Set canvas dimensions based on background image size
+      canvas.width = bgImage.width / 2;
+      canvas.height = bgImage.height / 2;
+      
+      // Draw background
+      ctx.drawImage(bgImage, 0, 0, canvas.width, canvas.height);
+      
+      // Draw teacher image (either uploaded or loaded from folder "ucitele")
+      if (uploaded) {
+        ctx.drawImage(
+          image, 
+          (canvas.width - image.width / 2) / 2, 
+          (canvas.height - image.height / 2) / 2, 
+          image.width / 2, 
+          image.height / 2
+        );
+      }
+      
+      // Draw the foreground image if set
+      if (fgImage.src) {
+        ctx.drawImage(fgImage, 0, 0, canvas.width, canvas.height);
+      }
+      
+      // Define text box dimensions: top-left corner, spans 60% width and 70% height,
+      // starting at 15% down from the top
+      let textBoxWidth = canvas.width * 0.6;
+      let textBoxHeight = canvas.height * 0.7;
+      let textX = canvas.width * 0.05;
+      let textY = canvas.height * 0.20;
+      
+      let text = document.getElementById('textInput').value;
+      let maxFontSize = 60;
+      let minFontSize = 20;
+      let fontSize = maxFontSize;
+      let lineHeight = fontSize;
+      
+      ctx.fillStyle = 'white';
+      ctx.lineWidth = 6;
+      ctx.strokeStyle = 'black';
+      
+      // Adjust font size until text fits within the text box
+      while (fontSize > minFontSize) {
+        let words = text.split(' ');
+        let lines = [];
+        let line = '';
+        ctx.font = `${fontSize}px Roboto Condensed`;
+        lineHeight = fontSize * 1.2;
+        
+        for (let i = 0; i < words.length; i++) {
+          let testLine = line + words[i] + ' ';
+          let testWidth = ctx.measureText(testLine).width;
+          if (testWidth > textBoxWidth && i > 0) {
+            lines.push(line);
+            line = words[i] + ' ';
+          } else {
+            line = testLine;
+          }
+        }
+        lines.push(line);
+        
+        if (lines.length * lineHeight <= textBoxHeight) break;
+        fontSize -= 2;
+      }
+      
+      // Render text lines
+      let words = text.split(' ');
+      let lines = [];
+      let line = '';
+      ctx.font = `${fontSize}px Roboto Condensed`;
+      lineHeight = fontSize * 1.2;
+      
+      for (let i = 0; i < words.length; i++) {
+        let testLine = line + words[i] + ' ';
+        let testWidth = ctx.measureText(testLine).width;
+        if (testWidth > textBoxWidth && i > 0) {
+          lines.push(line);
+          line = words[i] + ' ';
+        } else {
+          line = testLine;
+        }
+      }
+      lines.push(line);
+      
+      for (let i = 0; i < lines.length; i++) {
+        ctx.strokeText(lines[i], textX, textY + (i * lineHeight));
+        ctx.fillText(lines[i], textX, textY + (i * lineHeight));
+      }
+    }
+
+    function downloadImage() {
+  try {
+    canvas.toBlob(function(blob) {
+      if (blob) {
+        let url = URL.createObjectURL(blob);
+        let link = document.createElement('a');
+        link.download = 'nejlepsiucitel.png';
+        link.href = url;
+        link.click();
+        URL.revokeObjectURL(url);
+      } else {
+        alert("Unable to create image blob. The canvas might be tainted.");
+      }
+    }, "image/png");
+  } catch (e) {
+    console.error("Download failed:", e);
+    alert("Download failed: The canvas is tainted (likely due to cross-origin images). Running this on a web server may resolve this issue.");
+  }
+    }
+
+
+    function updateForeground() {
+      let select = document.getElementById('foregroundSelect');
+      fgImage.src = 'foreground/' + select.value;
+      fgImage.onload = updateCanvas;
+    }
+
+    // Update teacher image based on the teacher dropdown selection.
+    function updateTeacher() {
+      let select = document.getElementById('teacherSelect');
+      let fileInput = document.getElementById('imageUpload');
+      if (select.value === "upload") {
+        // Show file input if "Upload Image" is selected.
+        fileInput.style.display = "inline-block";
+        uploaded = false; // Wait for file upload to set the image.
+      } else {
+        // Hide file input and load image from folder "ucitele".
+        fileInput.style.display = "none";
+        image.src = 'ucitele/' + select.value;
+        uploaded = true;
+      }
+    }
+
+    // Hardcoded list of teacher image filenames from the "ucitele" folder.
+    const teacherFiles = [
+      "Sedmidub.png",
+      "Urban.png",
+      "Malijevsky.png",
+      "Clupek.png",
+      "Pribal.png",
+      "Kolafa.png",
+      "Slavicek.png",
+      "Rezanka.png"
+    ];
+    
+    let teacherSelect = document.getElementById('teacherSelect');
+    teacherFiles.forEach(fileName => {
+      let option = document.createElement('option');
+      option.value = fileName;
+      option.textContent = fileName;
+      teacherSelect.appendChild(option);
+    });
+    // Append "Upload Image" as the last option.
+    let uploadOption = document.createElement('option');
+    uploadOption.value = "upload";
+    uploadOption.textContent = "Nahraj obrázek";
+    teacherSelect.appendChild(uploadOption);
+    
+    // Set default selection for teacher dropdown and load image.
+    if (teacherSelect.options.length > 0) {
+      teacherSelect.selectedIndex = 0;
+      updateTeacher();
+    }
+    
+    // Hardcoded list of foreground filenames.
+    const foregroundFiles = [
+      "nejlepsiucitel.png",
+      "empty.png",
+      "QR_less.png",
+      "QR.png"
+    ];
+    
+    let fgSelect = document.getElementById('foregroundSelect');
+    foregroundFiles.forEach(fileName => {
+      let option = document.createElement('option');
+      option.value = fileName;
+      option.textContent = fileName;
+      fgSelect.appendChild(option);
+    });
+    
+    if (fgSelect.options.length > 0) {
+      fgSelect.selectedIndex = 0;
+      updateForeground();
+    }
+  </script>
+</body>
+</html>
